@@ -69,6 +69,7 @@ async function signBuy(shares) {
 
 // ---------------------------------------------------------------- the book
 let book = null;
+let _addresses = new Map();
 async function loadBook() {
   const r = await fetch(`${API}/api/dao`, { cache: 'no-store' });
   if (!r.ok) throw new Error('the book could not be read (' + r.status + ')');
@@ -150,7 +151,7 @@ function drawSale(series, supply) {
 }
 
 // Who holds the season: horizontal bars, longest first, you in sea-blue.
-function drawHolders(holders, supply) {
+function drawHolders(holders, supply, addresses = new Map()) {
   const host = $('#holders-chart');
   host.innerHTML = '';
   if (!holders.length) { host.innerHTML = '<div class="empty">Nobody holds the season yet.</div>'; return; }
@@ -164,9 +165,14 @@ function drawHolders(holders, supply) {
   rows.forEach((h, i) => {
     const yy = T + i * rowH;
     const you = SEAL && h.key === SEAL.did;
-    svg.append(el('text', { x: L - 10, y: yy + 22, 'text-anchor': 'end', class: 'hname' }, (you ? '★ ' : '') + h.name));
+    // a holder with an identity links to their season address on the explorer
+    const addr = addresses.get(h.key);
+    const row = addr ? el('a', { href: `https://mempool.guide/testnet4/address/${addr}`, target: '_blank', rel: 'noopener noreferrer', class: 'hlink' }) : el('g');
+    row.append(el('title', {}, addr ? `season address ${addr} — where the prize is paid` : 'no nostr identity — cannot be paid'));
+    row.append(el('text', { x: L - 10, y: yy + 22, 'text-anchor': 'end', class: 'hname' }, (you ? '★ ' : '') + h.name));
     const bar = el('rect', { x: L, y: yy + 6, width: 0, height: rowH - 12, class: 'hbar' + (you ? ' you' : '') });
-    svg.append(bar);
+    row.append(bar);
+    svg.append(row);
     requestAnimationFrame(() => { bar.style.transition = 'width .9s cubic-bezier(.2,.8,.2,1)'; bar.setAttribute('width', w(h.shares)); });
     const share = pct(h.shares, supply);
     const inside = w(h.shares) > 70;
@@ -189,7 +195,8 @@ function render() {
   $('#remaining-label').textContent = fmt(b.remaining) + ' unsold';
   $('#api-link').href = `${API}/api/dao`;
   drawSale(b.series, b.supply);
-  drawHolders(b.holders, b.supply);
+  drawHolders(b.holders, b.supply, _addresses);
+  seasonAddresses(b.holders, b.season).then((m) => { if (m.size && book === b) { _addresses = m; drawHolders(b.holders, b.supply, m); } });
   const led = $('#ledger');
   led.innerHTML = '';
   if (!b.ledger.length) led.innerHTML = '<li class="muted" style="list-style:none;margin-left:-1.4em">Nothing yet. The first buy of the season writes the first line.</li>';
@@ -240,6 +247,36 @@ function updateCost() {
   else if (book && n > book.remaining) { note.textContent = `Only ${fmt(book.remaining)} shares are left this season.`; note.classList.add('bad'); }
   else if (n > MAX_BUY) { note.textContent = `At most ${fmt(MAX_BUY)} shares in one signed move.`; note.classList.add('bad'); }
   else note.textContent = '';
+}
+
+// ---------------------------------------------------------------- season addresses
+// The prize for season N goes to each holder's public key plus N·G (on the
+// even-y lift), as a fleet-style taproot address. Same arithmetic as the
+// till; derived here so a holder's bar links to where their sats land.
+let _curve = null;
+async function curve() {
+  if (_curve) return _curve;
+  const [{ secp256k1 }, { bech32m }] = await Promise.all([
+    import('https://esm.sh/@noble/curves@1.4.0/secp256k1'),
+    import('https://esm.sh/@scure/base@1.1.7'),
+  ]);
+  _curve = { secp256k1, bech32m };
+  return _curve;
+}
+async function seasonAddresses(holders, season) {
+  const out = new Map();
+  try {
+    const { secp256k1, bech32m } = await curve();
+    const Pt = secp256k1.ProjectivePoint;
+    for (const h of holders) {
+      const m = /^did:nostr:([0-9a-f]{64})$/.exec(h.key || '');
+      if (!m) continue;
+      const Q = Pt.fromHex('02' + m[1]).add(Pt.BASE.multiply(BigInt(season)));
+      const x = Q.toRawBytes(true).slice(1);
+      out.set(h.key, bech32m.encode('tb', [1, ...bech32m.toWords(x)]));
+    }
+  } catch { /* no links, the chart still draws */ }
+  return out;
 }
 
 // ---------------------------------------------------------------- the till
