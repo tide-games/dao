@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Season DAO</title>
+<meta name="description" content="A million shares a season, bought with sealed gold that never comes back. Who holds the season, drawn live from Tideholm's ledger.">
+<meta property="og:title" content="The Season DAO">
+<meta property="og:description" content="A million shares a season, bought with sealed gold that never comes back. Who holds the season.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://tide-games.github.io/dao/">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ctext y='26' font-size='26'%3E🏛️%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header>
+  <p class="eyebrow"><a href="https://tide-games.github.io/">⛵ Tide Games</a> · a venue of the fleet</p>
+  <h1>The Season DAO</h1>
+  <p class="tagline">A million shares a season. Gold goes in and never comes out.<br>What you hold is the only thing that outlives the tide.</p>
+</header>
+
+<main>
+  <section class="hero card" id="hero">
+    <div class="hero-left">
+      <div class="season-badge" id="season-badge">Season —</div>
+      <div class="big" id="sold-big">—</div>
+      <div class="big-sub">of <span id="supply-big">1,000,000</span> shares held</div>
+      <div class="bar" aria-hidden="true"><div class="bar-fill" id="bar-fill" style="width:0%"></div></div>
+      <div class="bar-labels"><span id="pct-label">0%</span><span id="remaining-label">1,000,000 unsold</span></div>
+    </div>
+    <div class="hero-right" id="you">
+      <div class="you-title">You</div>
+      <p class="muted" id="you-hint">Come through the Tidegate at <a href="https://nostr.social/tideholm/">Tideholm</a> — the Market tab, then <em>The Games Fleet</em> — and your sealed gold follows you here.</p>
+      <div class="you-grid hidden" id="you-grid">
+        <div><div class="k">Purse (sealed)</div><div class="v" id="you-purse">—</div></div>
+        <div><div class="k">Your shares</div><div class="v gold" id="you-shares">0</div></div>
+        <div><div class="k">Of the season</div><div class="v" id="you-pct">0%</div></div>
+      </div>
+      <form id="buy" class="buy hidden" autocomplete="off">
+        <label for="shares">Buy shares</label>
+        <div class="row">
+          <input id="shares" type="number" min="1" step="1" value="100" inputmode="numeric">
+          <button type="button" class="max" id="max" title="everything the purse holds">▲</button>
+          <button type="submit" id="sign">Sign the purchase</button>
+        </div>
+        <p class="cost">Costs <strong id="cost">100</strong> gold from the seal · one gold a share · never redeemable</p>
+        <p class="note" id="buy-note"></p>
+      </form>
+      <div class="slip hidden" id="slip"></div>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>The sale</h2>
+    <p class="muted" id="sale-caption">Every share bought this season, in the order it was bought.</p>
+    <div class="chart" id="sale-chart"></div>
+  </section>
+
+  <section class="card">
+    <h2>Who holds the season</h2>
+    <p class="muted" id="holders-caption">Ranked by shares. The season's winner is whoever ends it holding the most of it.</p>
+    <div class="chart" id="holders-chart"></div>
+  </section>
+
+  <section class="card">
+    <h2>Recent moves</h2>
+    <ol class="ledger" id="ledger"></ol>
+  </section>
+
+  <section class="card rules">
+    <h2>The rules, all of them</h2>
+    <ul>
+      <li><strong>A million shares a season</strong>, one gold each, first come first served.</li>
+      <li><strong>One-way.</strong> The gold is burned. Nothing pays it back — no redemption, no dividend, not this season.</li>
+      <li><strong>From the seal only.</strong> Shares are bought with sealed gold: a signed trail move, carried home and redeemed at Tideholm like any other slip. They appear in the book when the slip is redeemed.</li>
+      <li><strong>The book outlives the season.</strong> It sits beside the hall of fame, not in the world. When the tide resets, this stays.</li>
+      <li><strong>Not yet:</strong> no vote, no trading, no parent. Each is a later law. <a href="https://github.com/melvincarvalho/tideholm/issues/189">Read the plan ↗</a></li>
+    </ul>
+  </section>
+</main>
+
+<footer>
+  <a id="api-link" href="https://nostr.social/tideholm/api/dao">the book, as JSON ↗</a> ·
+  <a href="https://github.com/tide-games/dao">[source]</a> ·
+  <a href="https://nostr.social/tideholm/almanac.html">the Almanac</a>
+</footer>
+
+<script type="module" src="app.js"></script>
+</body>
+</html>
