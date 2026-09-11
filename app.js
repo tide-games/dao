@@ -192,7 +192,7 @@ function render() {
   drawHolders(b.holders, b.supply);
   const led = $('#ledger');
   led.innerHTML = '';
-  if (!b.ledger.length) led.innerHTML = '<li class="muted">Nothing yet.</li>';
+  if (!b.ledger.length) led.innerHTML = '<li class="muted" style="list-style:none;margin-left:-1.4em">Nothing yet. The first buy of the season writes the first line.</li>';
   for (const e of b.ledger.slice().reverse().slice(0, 20)) {
     const li = document.createElement('li');
     li.innerHTML = `<span class="who"></span> bought <span class="n"></span> shares for <span class="n g"></span> gold<span class="when"></span>`;
