@@ -242,8 +242,25 @@ function updateCost() {
   else note.textContent = '';
 }
 
+// ---------------------------------------------------------------- the till
+// The prize is paid from one address in testnet4 sats. Its balance is read
+// straight from the explorer, mempool included — the chain is the receipt.
+const TILL = 'tb1peza8n3sgrcs88nl3k3wqsv8wmxlmlatmnhxccazfhxaps6a672gq2l258w';
+async function loadTill() {
+  const el = $('#till-balance');
+  if (!el) return;
+  try {
+    const j = await (await fetch(`https://mempool.guide/testnet4/api/address/${TILL}`, { cache: 'no-store' })).json();
+    const c = j.chain_stats, m = j.mempool_stats;
+    const confirmed = c.funded_txo_sum - c.spent_txo_sum, pending = m.funded_txo_sum - m.spent_txo_sum;
+    el.textContent = fmt(confirmed + pending) + ' sat' + (pending ? ` (${fmt(pending)} unconfirmed)` : '');
+  } catch { el.textContent = 'balance unavailable'; }
+}
+
 // ---------------------------------------------------------------- boot
 (async () => {
+  loadTill();
+  setInterval(loadTill, 120000);
   if (SEAL && q.has('seal')) {
     // Arrival from the tidegate: cut the shared slip at the trail's tip.
     const s0 = loadSeg();

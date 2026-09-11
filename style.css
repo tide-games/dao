@@ -108,6 +108,9 @@ main { max-width: 980px; margin: 0 auto; padding: 14px 20px 40px; display: grid;
 .rules li { margin: 6px 0; }
 
 footer { max-width: 980px; margin: 0 auto; padding: 10px 20px 40px; color: var(--ink-soft); font-size: 14px; }
+footer .till { margin: 0 0 10px; padding: 12px 14px; border-radius: 12px; background: linear-gradient(#fbf3dd, #f6ebcf); border: 1px solid #d9c48d; color: var(--ink); }
+footer .till a { color: var(--gold-deep); font-weight: 700; font-variant-numeric: tabular-nums; }
+footer .till #till-balance { font-weight: 700; font-variant-numeric: tabular-nums; }
 
 @media (max-width: 720px) {
   .hero { grid-template-columns: 1fr; }
