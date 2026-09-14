@@ -41,6 +41,12 @@ function loadSeg() {
 }
 function saveSeg(s) { localStorage.setItem(segKey(), JSON.stringify(s)); }
 function purse() { const s = loadSeg(); return s.base + s.txs.reduce((a, t) => a + t.delta, 0); }
+// The amount last typed into the buy box, remembered so a return visit
+// opens on the same number rather than the default hundred.
+const SHARES_KEY = 'dao-shares';
+function loadShares() { const n = Math.floor(Number(localStorage.getItem(SHARES_KEY))); return n >= 1 ? n : null; }
+function saveShares(n) { try { localStorage.setItem(SHARES_KEY, String(n)); } catch { /* a browser that keeps nothing */ } }
+
 const b64url = (x) => btoa(unescape(encodeURIComponent(x))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 
 let _tools = null;
@@ -315,12 +321,13 @@ async function loadTill() {
     $('#holders-chart').innerHTML = '';
     return;
   }
+  if (SEAL) { const n = loadShares(); if (n) $('#shares').value = n; }
   render();
   setInterval(async () => { try { await loadBook(); render(); } catch { /* keep the last book */ } }, 60000);
 
   if (!SEAL) return;
-  $('#shares').addEventListener('input', updateCost);
-  $('#max').addEventListener('click', () => { $('#shares').value = Math.max(0, Math.min(purse(), book.remaining, MAX_BUY)); updateCost(); });
+  $('#shares').addEventListener('input', () => { const n = Math.floor(Number($('#shares').value)) || 0; if (n >= 1) saveShares(n); updateCost(); });
+  $('#max').addEventListener('click', () => { const n = Math.max(0, Math.min(purse(), book.remaining, MAX_BUY)); $('#shares').value = n; if (n >= 1) saveShares(n); updateCost(); });
   $('#buy').addEventListener('submit', async (ev) => {
     ev.preventDefault();
     const n = Math.floor(Number($('#shares').value)) || 0;
