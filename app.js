@@ -147,7 +147,10 @@ function drawSale(series, supply) {
   d += ` L ${x(t1)} ${y(prev)}`;
   svg.append(el('path', { d: d + ` L ${x(t1)} ${y(0)} Z`, class: 'area' }));
   svg.append(el('path', { d, class: 'line' }));
-  for (const p of pts.slice(-40)) svg.append(el('circle', { cx: x(p.at), cy: y(p.sold), r: 3.2, class: 'dot' }));
+  // each dot in its buyer's colour, one hue per identity, where the ledger names the buy
+  const buyer = new Map((book?.ledger || []).map((e) => [e.at, e.key || e.name]));
+  const hue = (k) => { let h = 0; for (const c of String(k)) h = (h * 31 + c.charCodeAt(0)) >>> 0; return h % 360; };
+  for (const p of pts.slice(-40)) { const k = buyer.get(p.at); svg.append(el('circle', { cx: x(p.at), cy: y(p.sold), r: 3.2, class: 'dot', ...(k ? { style: `fill:hsl(${hue(k)} 70% 55%);stroke:hsl(${hue(k)} 70% 30%)` } : {}) })); }
   // the supply line, if it is in frame
   if (supply <= ymax) {
     svg.append(el('line', { x1: L, x2: W - R, y1: y(supply), y2: y(supply), stroke: '#a02020', 'stroke-dasharray': '6 4' }));
