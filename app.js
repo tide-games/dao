@@ -156,13 +156,27 @@ function drawSale(series, supply) {
   host.append(svg);
 }
 
-// Who holds the season: horizontal bars, longest first, you in sea-blue.
+// The prize: the till, shared out by shares held. What a share is worth today.
+let _till = null; // confirmed + pending sats, once the explorer has answered
+const prizeOf = (shares) => (_till == null || !book || !book.sold) ? null : Math.floor(_till * shares / book.sold);
+function renderPrize() {
+  const line = $('#prize-line');
+  if (!line || !book) return;
+  if (_till == null) { $('#prize-till').textContent = '…'; $('#prize-share').textContent = '…'; return; }
+  $('#prize-till').textContent = fmt(_till) + ' sat';
+  $('#prize-share').textContent = book.sold ? (_till / book.sold).toFixed(_till / book.sold < 10 ? 2 : 1) + ' sat' : 'nothing yet';
+  const me = mine();
+  if (me && $('#you-prize')) $('#you-prize').textContent = fmt(prizeOf(me.shares)) + ' sat';
+}
+
+// Who holds the season: horizontal bars, longest first, you in sea-blue,
+// each with its share of the till as it stands today.
 function drawHolders(holders, supply, addresses = new Map()) {
   const host = $('#holders-chart');
   host.innerHTML = '';
   if (!holders.length) { host.innerHTML = '<div class="empty">Nobody holds the season yet.</div>'; return; }
   const rows = holders.slice(0, 12);
-  const W = 900, rowH = 34, L = 150, R = 90, T = 8;
+  const W = 900, rowH = 34, L = 150, R = 200, T = 8;
   const H = T + rows.length * rowH + 8;
   const svg = el('svg', { viewBox: `0 0 ${W} ${H}`, role: 'img', 'aria-label': 'shares by holder' });
   svg.append(defs());
@@ -183,7 +197,8 @@ function drawHolders(holders, supply, addresses = new Map()) {
     const share = pct(h.shares, supply);
     const inside = w(h.shares) > 70;
     svg.append(el('text', { x: inside ? L + 8 : L + w(h.shares) + 8, y: yy + 22, class: inside ? 'pct-lbl' : 'hval' }, share.toFixed(share >= 10 ? 1 : 2) + '%'));
-    svg.append(el('text', { x: W - 4, y: yy + 22, 'text-anchor': 'end', class: 'hval' }, fmt(h.shares)));
+    const prize = prizeOf(h.shares);
+    svg.append(el('text', { x: W - 4, y: yy + 22, 'text-anchor': 'end', class: 'hval' }, fmt(h.shares) + (prize == null ? '' : ` · ${fmt(prize)} sat today`)));
   });
   host.append(svg);
   if (holders.length > rows.length) $('#holders-caption').textContent += ` Showing the top ${rows.length} of ${holders.length}.`;
@@ -201,6 +216,7 @@ function render() {
   $('#remaining-label').textContent = fmt(b.remaining) + ' unsold';
   $('#api-link').href = `${API}/api/dao`;
   drawSale(b.series, b.supply);
+  renderPrize();
   drawHolders(b.holders, b.supply, _addresses);
   seasonAddresses(b.holders, b.season).then((m) => { if (m.size && book === b) { _addresses = m; drawHolders(b.holders, b.supply, m); } });
   const led = $('#ledger');
@@ -227,6 +243,7 @@ function renderYou() {
   $('#you-purse').textContent = fmt(purse());
   $('#you-shares').textContent = fmt(me ? me.shares : 0);
   $('#you-pct').textContent = (me ? pct(me.shares, book.supply) : 0).toFixed(3) + '%';
+  $('#you-prize').textContent = me && prizeOf(me.shares) != null ? fmt(prizeOf(me.shares)) + ' sat' : '—';
   const s = loadSeg();
   const slip = $('#slip');
   if (s.txs.length) {
@@ -297,7 +314,9 @@ async function loadTill() {
     const c = j.chain_stats, m = j.mempool_stats;
     const confirmed = c.funded_txo_sum - c.spent_txo_sum, pending = m.funded_txo_sum - m.spent_txo_sum;
     el.textContent = fmt(confirmed + pending) + ' sat' + (pending ? ` (${fmt(pending)} unconfirmed)` : '');
+    _till = confirmed + pending;
   } catch { el.textContent = 'balance unavailable'; }
+  if (book) { renderPrize(); drawHolders(book.holders, book.supply, _addresses); }
 }
 
 // ---------------------------------------------------------------- boot

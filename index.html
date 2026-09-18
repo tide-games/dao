@@ -36,6 +36,7 @@
       <div class="big-sub">of <span id="supply-big">1,000,000</span> shares held</div>
       <div class="bar" aria-hidden="true"><div class="bar-fill" id="bar-fill" style="width:0%"></div></div>
       <div class="bar-labels"><span id="pct-label">0%</span><span id="remaining-label">1,000,000 unsold</span></div>
+      <p class="prize" id="prize-line">The till holds <strong id="prize-till">…</strong> — <strong id="prize-share">…</strong> a share today, paid pro rata when the tide turns.</p>
     </div>
     <div class="hero-right" id="you">
       <div class="you-title">You</div>
@@ -44,6 +45,7 @@
         <div><div class="k">Purse (sealed)</div><div class="v" id="you-purse">—</div></div>
         <div><div class="k">Your shares</div><div class="v gold" id="you-shares">0</div></div>
         <div><div class="k">Of the season</div><div class="v" id="you-pct">0%</div></div>
+        <div><div class="k">Prize today</div><div class="v" id="you-prize">—</div></div>
       </div>
       <form id="buy" class="buy hidden" autocomplete="off">
         <label for="shares">Buy shares</label>
@@ -92,6 +94,7 @@
 <footer>
   <p class="till" id="till">The till: <a id="till-link" href="https://mempool.guide/testnet4/address/tb1peza8n3sgrcs88nl3k3wqsv8wmxlmlatmnhxccazfhxaps6a672gq2l258w" target="_blank" rel="noopener noreferrer">tb1peza8n…2l258w</a> · <span id="till-balance">…</span> — the prize is paid from here, in testnet4 sats, to each holder's season address.</p>
   <a id="api-link" href="https://nostr.social/tideholm/api/dao">the book, as JSON ↗</a> ·
+  <a href="https://play-grounds.github.io/sidestr/dao/" title="the season on a sidestr chain: shares as an asset, the till as coins, a veto window, the right to leave">where this is going ↗</a> ·
   <a href="https://github.com/tide-games/dao">[source]</a> ·
   <a href="https://nostr.social/tideholm/almanac.html">the Almanac</a>
 </footer>
